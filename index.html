@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>殷崇信 · 轻卡总体设计工程师</title>
+<meta name="description" content="殷崇信，轻卡总体设计工程师，主攻新能源轻卡。南昌大学车辆工程专业学士，12 年整车设计经验。">
+<style>
+  /* ============================================================
+     设计令牌
+     ============================================================ */
+  :root {
+    --ink:        #e8f1ff;
+    --ink-soft:   #a3bbdc;
+    --ink-faint:  #7089ad;
+
+    --glass:      rgba(8, 18, 40, .70);
+    --glass-line: rgba(110, 178, 255, .20);
+    --chip:       rgba(79, 209, 255, .07);
+    --chip-line:  rgba(79, 209, 255, .20);
+
+    --accent:     #4fd1ff;
+    --accent-2:   #6ea8ff;
+
+    --radius:     20px;
+    --maxw:       740px;
+    --ease:       cubic-bezier(.22, 1, .36, 1);
+
+    /* 各视差层高度 —— 图幅比均为 1600:500，故贴图宽度 = 高度 × 3.2 */
+    --city-h:     30vh;
+    --park-h:     26vh;
+    --road-h:     24vh;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    padding: clamp(1.75rem, 5vw, 4rem) 1.25rem clamp(9rem, 26vh, 17rem);
+    display: flex;
+    justify-content: center;
+    font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC",
+                 "Hiragino Sans GB", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--ink);
+    background: #0c3a66;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================================
+     背景场景
+     ============================================================ */
+  .scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* 夜空渐变 */
+  .scene__sky {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 70% at 78% 6%,  rgba(125, 190, 255, .40), transparent 62%),
+      radial-gradient(90% 55% at 12% 42%,  rgba(96, 220, 250, .24), transparent 66%),
+      linear-gradient(180deg,
+        #10457f 0%,
+        #13538f 28%,
+        #12629e 52%,
+        #104d84 74%,
+        #0c3a66 100%);
+  }
+
+  /* 科技网格 */
+  .scene__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(to right, rgba(96, 170, 255, .10) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(to bottom, rgba(96, 170, 255, .10) 0 1px, transparent 1px 64px);
+    -webkit-mask-image: radial-gradient(120% 80% at 50% 22%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(120% 80% at 50% 22%, #000 0%, transparent 72%);
+    animation: gridDrift 24s linear infinite;
+  }
+
+  @keyframes gridDrift {
+    from { background-position: 0 0, 0 0; }
+    to   { background-position: 64px 0, 64px 0; }
+  }
+
+  /* 视差层：repeat-x 的 SVG 贴图 + background-position 位移，实现无缝滚动。
+     贴图宽高比恒为 1600:500，故 background-size 取 <层高> × 3.2，
+     贴图恰好铺满层高且不变形。 */
+  .layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-repeat: repeat-x;
+    background-position: 0 bottom;
+    will-change: background-position;
+  }
+
+  /* ---- 远景：厂房与仓房剪影 ---- */
+  .layer--city {
+    bottom: 30vh;
+    height: var(--city-h);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='500' viewBox='0 0 1600 500'%3E%3Cdefs%3E%3Cpattern id='wa' width='19' height='23' patternUnits='userSpaceOnUse'%3E%3Crect x='4' y='5' width='7' height='10' rx='1' fill='%235fc9f3'/%3E%3C/pattern%3E%3Cpattern id='wb' width='27' height='31' patternUnits='userSpaceOnUse'%3E%3Crect x='6' y='8' width='6' height='8' rx='1' fill='%234a9fd0'/%3E%3C/pattern%3E%3C/defs%3E%3Cg fill='%230a1a35'%3E%3Crect x='40' y='340' width='120' height='160'/%3E%3Crect x='170' y='300' width='70' height='200'/%3E%3Crect x='250' y='368' width='150' height='132'/%3E%3Crect x='500' y='396' width='180' height='104'/%3E%3Crect x='690' y='312' width='95' height='188'/%3E%3Crect x='795' y='356' width='130' height='144'/%3E%3Crect x='1002' y='400' width='170' height='100'/%3E%3Crect x='1180' y='322' width='85' height='178'/%3E%3Crect x='1275' y='366' width='140' height='134'/%3E%3Crect x='1424' y='296' width='64' height='204'/%3E%3Crect x='1496' y='382' width='64' height='118'/%3E%3C/g%3E%3Cg fill='%230b1d3a'%3E%3Crect x='440' y='212' width='30' height='90'/%3E%3Crect x='935' y='228' width='26' height='80'/%3E%3Cpath d='M455 212 L455 186 M948 228 L948 204' stroke='%230b1d3a' stroke-width='3'/%3E%3C/g%3E%3Ccircle cx='455' cy='184' r='3.2' fill='%23ff6b6b' opacity='.85'/%3E%3Ccircle cx='948' cy='202' r='3' fill='%23ff6b6b' opacity='.7'/%3E%3Cg fill='url(%23wa)' opacity='.7'%3E%3Crect x='40' y='340' width='120' height='160'/%3E%3Crect x='250' y='368' width='150' height='132'/%3E%3Crect x='690' y='312' width='95' height='188'/%3E%3Crect x='1180' y='322' width='85' height='178'/%3E%3C/g%3E%3Cg fill='url(%23wb)' opacity='.55'%3E%3Crect x='170' y='300' width='70' height='200'/%3E%3Crect x='500' y='396' width='180' height='104'/%3E%3Crect x='795' y='356' width='130' height='144'/%3E%3Crect x='1275' y='366' width='140' height='134'/%3E%3Crect x='1424' y='296' width='64' height='204'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 96vh auto;
+    animation: driftCity 90s linear infinite;
+  }
+
+  /* ---- 中景：仓库、龙门吊、集装箱堆场、路灯 ---- */
+  .layer--park {
+    bottom: 24vh;
+    height: var(--park-h);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='500' viewBox='0 0 1600 500'%3E%3Cdefs%3E%3Cpattern id='co' width='9' height='9' patternUnits='userSpaceOnUse'%3E%3Crect width='1.4' height='9' fill='%23000' opacity='.22'/%3E%3C/pattern%3E%3ClinearGradient id='lp' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23bfe9ff' stop-opacity='.26'/%3E%3Cstop offset='1' stop-color='%23bfe9ff' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='450' width='1600' height='50' fill='%230a1830'/%3E%3Crect x='0' y='447' width='1600' height='3' fill='%2316325f'/%3E%3Crect x='40' y='246' width='330' height='204' fill='%230d2244'/%3E%3Crect x='40' y='246' width='330' height='13' fill='%23153a6e'/%3E%3Cg fill='%23071528'%3E%3Crect x='78' y='330' width='70' height='120'/%3E%3Crect x='178' y='330' width='70' height='120'/%3E%3Crect x='278' y='330' width='70' height='120'/%3E%3C/g%3E%3Cg fill='%23ffc978' opacity='.16'%3E%3Crect x='78' y='330' width='70' height='120'/%3E%3Crect x='178' y='330' width='70' height='120'/%3E%3Crect x='278' y='330' width='70' height='120'/%3E%3C/g%3E%3Cg fill='%23ffc978' opacity='.07'%3E%3Cpath d='M78 450 L148 450 L162 486 L62 486 Z'/%3E%3Cpath d='M278 450 L348 450 L362 486 L262 486 Z'/%3E%3C/g%3E%3Crect x='390' y='410' width='52' height='26' rx='4' fill='%23133a68'/%3E%3Crect x='440' y='372' width='6' height='64' fill='%231b4a8a'/%3E%3Crect x='446' y='428' width='26' height='5' rx='2' fill='%232f74c4'/%3E%3Ccircle cx='404' cy='440' r='7' fill='%230e2444'/%3E%3Ccircle cx='432' cy='440' r='7' fill='%230e2444'/%3E%3Crect x='632' y='246' width='18' height='204' fill='%23153a6e'/%3E%3Crect x='1008' y='246' width='18' height='204' fill='%23153a6e'/%3E%3Cpath d='M632 296 L650 340 M1026 296 L1008 340' stroke='%23153a6e' stroke-width='6' fill='none'/%3E%3Crect x='604' y='224' width='450' height='22' rx='3' fill='%231b4a8a'/%3E%3Crect x='604' y='224' width='450' height='6' rx='3' fill='%232f74c4'/%3E%3Crect x='812' y='246' width='46' height='16' rx='3' fill='%232f74c4'/%3E%3Cpath d='M835 262 L835 326' stroke='%232f74c4' stroke-width='3'/%3E%3Cpath d='M827 326 L843 326 L839 340 L831 340 Z' fill='%234a94e8'/%3E%3Cg opacity='.72'%3E%3Crect x='1116' y='402' width='88' height='48' rx='3' fill='%231d4ed8'/%3E%3Crect x='1208' y='402' width='88' height='48' rx='3' fill='%230e7490'/%3E%3Crect x='1404' y='402' width='86' height='48' rx='3' fill='%2315803d'/%3E%3Crect x='1494' y='402' width='66' height='48' rx='3' fill='%231d4ed8'/%3E%3Crect x='1116' y='352' width='88' height='48' rx='3' fill='%230e7490' opacity='.8'/%3E%3Crect x='1404' y='352' width='86' height='48' rx='3' fill='%23b45309' opacity='.7'/%3E%3Crect x='1208' y='352' width='88' height='48' rx='3' fill='%23b45309' opacity='.72'/%3E%3Crect x='1208' y='302' width='88' height='48' rx='3' fill='%231d4ed8' opacity='.7'/%3E%3C/g%3E%3Cg fill='url(%23co)' opacity='.5'%3E%3Crect x='1116' y='402' width='88' height='48' rx='3'/%3E%3Crect x='1208' y='402' width='88' height='48' rx='3'/%3E%3Crect x='1404' y='402' width='86' height='48' rx='3'/%3E%3Crect x='1494' y='402' width='66' height='48' rx='3'/%3E%3Crect x='1116' y='352' width='88' height='48' rx='3'/%3E%3Crect x='1404' y='352' width='86' height='48' rx='3'/%3E%3Crect x='1208' y='352' width='88' height='48' rx='3'/%3E%3Crect x='1208' y='302' width='88' height='48' rx='3'/%3E%3C/g%3E%3Cg%3E%3Crect x='558' y='300' width='5' height='150' fill='%231c3a66'/%3E%3Crect x='537' y='292' width='47' height='9' rx='4' fill='%232f74c4'/%3E%3Cpath d='M560 301 L508 450 L614 450 Z' fill='url(%23lp)'/%3E%3C/g%3E%3Cg%3E%3Crect x='1067' y='300' width='5' height='150' fill='%231c3a66'/%3E%3Crect x='1046' y='292' width='47' height='9' rx='4' fill='%232f74c4'/%3E%3Cpath d='M1069 301 L1017 450 L1123 450 Z' fill='url(%23lp)'/%3E%3C/g%3E%3Cg%3E%3Crect x='1348' y='300' width='5' height='150' fill='%231c3a66'/%3E%3Crect x='1327' y='292' width='47' height='9' rx='4' fill='%232f74c4'/%3E%3Cpath d='M1350 301 L1298 450 L1404 450 Z' fill='url(%23lp)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 83.2vh auto;
+    animation: driftPark 30s linear infinite;
+  }
+
+  /* ---- 近景：园区道路 ---- */
+  .layer--road {
+    bottom: 0;
+    height: var(--road-h);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='500' viewBox='0 0 1600 500'%3E%3Cdefs%3E%3ClinearGradient id='rf' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23061026'/%3E%3Cstop offset='1' stop-color='%23040a14'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='0' y='0' width='1600' height='500' fill='url(%23rf)'/%3E%3Crect x='0' y='0' width='1600' height='5' fill='%23193b6c'/%3E%3Crect x='0' y='52' width='1600' height='4' fill='%235a8fd0' opacity='.3'/%3E%3Cg fill='%23a8cdf5' opacity='.42'%3E%3Crect x='0' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='200' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='400' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='600' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='800' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='1000' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='1200' y='140' width='100' height='7' rx='3.5'/%3E%3Crect x='1400' y='140' width='100' height='7' rx='3.5'/%3E%3C/g%3E%3Crect x='0' y='462' width='1600' height='5' fill='%235a8fd0' opacity='.22'/%3E%3Crect x='0' y='480' width='1600' height='20' fill='%230b1c36'/%3E%3C/svg%3E");
+    background-size: 76.8vh auto;
+    animation: driftRoad 9s linear infinite;
+  }
+
+  @keyframes driftCity { from { background-position-x: 0; } to { background-position-x: -96vh; } }
+  @keyframes driftPark { from { background-position-x: 0; } to { background-position-x: -83.2vh; } }
+  @keyframes driftRoad { from { background-position-x: 0; } to { background-position-x: -76.8vh; } }
+
+  /* 压暗四周，保证文字可读（置于轻卡之前，轻卡不受影响） */
+  .scene__vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(130% 90% at 50% 40%, transparent 40%, rgba(8, 30, 62, .45) 100%),
+      linear-gradient(180deg, rgba(8, 30, 62, .18) 0%, transparent 22%, transparent 62%, rgba(8, 30, 62, .15) 100%);
+  }
+
+  /* ============================================================
+     新能源轻卡
+     ============================================================ */
+  .truck {
+    position: absolute;
+    left: 0;
+    bottom: 11.5vh;
+    height: 13vh;
+    width: calc(13vh * 340 / 156);
+    animation: drive 26s linear infinite;
+    will-change: transform;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .6));
+  }
+
+  .truck__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  @keyframes drive {
+    from { transform: translateX(-40vw); }
+    to   { transform: translateX(116vw); }
+  }
+
+  .truck__bob {
+    transform-box: view-box;
+    transform-origin: 170px 134px;
+    animation: bob 1.9s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0)     rotate(0deg); }
+    30%      { transform: translateY(-1px)  rotate(-0.35deg); }
+    70%      { transform: translateY(0.8px) rotate(0.3deg); }
+  }
+
+  .wheel {
+    transform-box: view-box;
+    animation: spin .55s linear infinite;
+  }
+  .wheel--rear  { transform-origin: 90px 113px; }
+  .wheel--front { transform-origin: 232px 113px; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============================================================
+     内容
+     ============================================================ */
+  main {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: var(--maxw);
+  }
+
+  .card {
+    position: relative;
+    padding: clamp(1.75rem, 5vw, 3rem);
+    border: 1px solid var(--glass-line);
+    border-radius: var(--radius);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    box-shadow:
+      0 40px 90px -40px rgba(0, 0, 0, .9),
+      inset 0 1px 0 rgba(150, 200, 255, .12);
+    animation: rise .8s var(--ease) both;
+  }
+
+  /* 顶部科技高光条 */
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -1px; left: 12%; right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: .7;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ---- 头部 ---- */
+  .head {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .avatar {
+    flex: none;
+    width: 72px; height: 72px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #041022;
+    background: linear-gradient(140deg, #9be8ff, #4fd1ff 45%, #4a7fe8);
+    box-shadow:
+      0 0 0 1px rgba(150, 220, 255, .35),
+      0 10px 26px -10px rgba(79, 209, 255, .8);
+    user-select: none;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4.5vw, 1.9rem);
+    font-weight: 700;
+    letter-spacing: .01em;
+    line-height: 1.25;
+  }
+
+  .role {
+    margin: .35rem 0 0;
+    font-size: .92rem;
+    color: var(--ink-soft);
+  }
+
+  .role .dot {
+    display: inline-block;
+    width: 5px; height: 5px;
+    margin: 0 .5rem .22rem;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    vertical-align: middle;
+  }
+
+  /* ---- 通用 ---- */
+  .rule {
+    height: 1px;
+    margin: clamp(1.6rem, 4vw, 2.1rem) 0;
+    border: 0;
+    background: linear-gradient(90deg, transparent, var(--glass-line) 12%, var(--glass-line) 88%, transparent);
+  }
+
+  .sec-title {
+    margin: 0 0 .9rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: .85;
+  }
+
+  .lede {
+    margin: 0;
+    font-size: clamp(1.05rem, 2.6vw, 1.22rem);
+    font-weight: 500;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  .lede em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .prose p {
+    margin: 0 0 1rem;
+    color: var(--ink-soft);
+    font-size: .97rem;
+  }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ---- 基本信息 ---- */
+  .facts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: .9rem 1.5rem;
+  }
+
+  .facts li { display: flex; flex-direction: column; gap: .15rem; }
+
+  .facts .k {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--ink-faint);
+  }
+
+  .facts .v {
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* ---- 标签 ---- */
+  .tags {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .tags li {
+    padding: .32rem .78rem;
+    font-size: .82rem;
+    font-weight: 500;
+    color: #a9d6f5;
+    background: var(--chip);
+    border: 1px solid var(--chip-line);
+    border-radius: 999px;
+  }
+
+  /* ---- 社交链接 ---- */
+  .social {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+
+  .social a {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .55rem .95rem;
+    font-size: .86rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid var(--glass-line);
+    border-radius: 10px;
+    transition: color .18s var(--ease),
+                border-color .18s var(--ease),
+                background-color .18s var(--ease),
+                box-shadow .18s var(--ease),
+                transform .18s var(--ease);
+  }
+
+  .social a:hover,
+  .social a:focus-visible {
+    color: var(--accent);
+    border-color: rgba(79, 209, 255, .55);
+    background: rgba(79, 209, 255, .1);
+    box-shadow: 0 6px 20px -8px rgba(79, 209, 255, .7);
+    transform: translateY(-2px);
+  }
+
+  .social a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .social svg {
+    width: 16px; height: 16px;
+    flex: none;
+    fill: currentColor;
+  }
+
+  /* ---- 页脚 ---- */
+  footer {
+    position: relative;
+    z-index: 1;
+    margin-top: clamp(1.25rem, 3vw, 1.75rem);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  /* ============================================================
+     响应式
+     ============================================================ */
+  @media (max-width: 460px) {
+    .head { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .avatar { width: 60px; height: 60px; font-size: 1.25rem; }
+    .social { width: 100%; }
+    .social li { flex: 1 1 calc(50% - .3rem); }
+    .social a { width: 100%; justify-content: center; }
+    .truck { height: 11vh; bottom: 10vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+    .truck { transform: translateX(22vw); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 背景：物流园区 ===================== -->
+<div class="scene" aria-hidden="true">
+  <div class="scene__sky"></div>
+  <div class="scene__grid"></div>
+
+  <!-- 远景：厂房与仓房剪影 -->
+  <div class="layer layer--city"></div>
+  <!-- 中景：仓库、龙门吊、集装箱堆场、路灯 -->
+  <div class="layer layer--park"></div>
+  <!-- 近景：园区道路 -->
+  <div class="layer layer--road"></div>
+
+  <div class="scene__vignette"></div>
+
+  <!-- 新能源轻卡 -->
+  <div class="truck">
+    <svg class="truck__svg" viewBox="0 0 340 156" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="tBox" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f6fafe"/>
+          <stop offset="1" stop-color="#b9c9de"/>
+        </linearGradient>
+        <linearGradient id="tCab" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#74adea"/>
+          <stop offset="1" stop-color="#2c5a96"/>
+        </linearGradient>
+        <linearGradient id="tGlass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#b6e6ff" stop-opacity=".95"/>
+          <stop offset="1" stop-color="#1b4368" stop-opacity=".95"/>
+        </linearGradient>
+        <linearGradient id="tBeam" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0"   stop-color="#a9e8ff" stop-opacity=".45"/>
+          <stop offset=".45" stop-color="#a9e8ff" stop-opacity=".18"/>
+          <stop offset="1"   stop-color="#a9e8ff" stop-opacity="0"/>
+        </linearGradient>
+        <radialGradient id="tLamp">
+          <stop offset="0" stop-color="#e2f8ff" stop-opacity=".95"/>
+          <stop offset="1" stop-color="#e2f8ff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="tShadow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#000" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#000" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      <g class="truck__bob">
+
+        <!-- 前照灯地面光带 -->
+        <path d="M 267 128 L 424 106 L 424 154 L 267 139 Z" fill="url(#tBeam)"/>
+        <!-- 接地阴影 -->
+        <ellipse cx="162" cy="134" rx="120" ry="5.5" fill="url(#tShadow)"/>
+
+        <!-- 后轮 -->
+        <g class="wheel wheel--rear">
+          <circle cx="90" cy="113" r="21"   fill="#0c121d"/>
+          <circle cx="90" cy="113" r="16"   fill="#1a2230"/>
+          <circle cx="90" cy="113" r="11.5" fill="#8d99a8"/>
+          <path d="M90 113 L90 102.5 M90 113 L100 109.8 M90 113 L96.2 121.5 M90 113 L83.8 121.5 M90 113 L80 109.8"
+                stroke="#5c6874" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M90 113 L90 102.5" stroke="#7fe3ff" stroke-width="2.7" stroke-linecap="round"/>
+          <circle cx="90" cy="113" r="3.6" fill="#d3dae3"/>
+          <circle cx="95.8" cy="113" r="1.8" fill="#39414d"/>
+        </g>
+
+        <!-- 前轮 -->
+        <g class="wheel wheel--front">
+          <circle cx="232" cy="113" r="21"   fill="#0c121d"/>
+          <circle cx="232" cy="113" r="16"   fill="#1a2230"/>
+          <circle cx="232" cy="113" r="11.5" fill="#8d99a8"/>
+          <path d="M232 113 L232 102.5 M232 113 L242 109.8 M232 113 L238.2 121.5 M232 113 L225.8 121.5 M232 113 L222 109.8"
+                stroke="#5c6874" stroke-width="2.7" stroke-linecap="round"/>
+          <path d="M232 113 L232 102.5" stroke="#7fe3ff" stroke-width="2.7" stroke-linecap="round"/>
+          <circle cx="232" cy="113" r="3.6" fill="#d3dae3"/>
+          <circle cx="237.8" cy="113" r="1.8" fill="#39414d"/>
+        </g>
+
+        <!-- 底盘大梁 -->
+        <rect x="56" y="96" width="216" height="10" rx="3" fill="#111a2a"/>
+
+        <!-- 货箱 -->
+        <rect x="30" y="14" width="166" height="82" rx="4" fill="url(#tBox)"/>
+        <path d="M58 18 L58 92 M86 18 L86 92 M114 18 L114 92 M142 18 L142 92 M170 18 L170 92"
+              stroke="#8fa3bd" stroke-width="1" opacity=".38"/>
+        <rect x="30" y="84" width="166" height="10" fill="#17a9cd"/>
+        <rect x="30" y="84" width="166" height="3" fill="#7ceaff" opacity=".85"/>
+        <!-- 新能源闪电标 -->
+        <circle cx="122" cy="55" r="27" fill="url(#tLamp)" opacity=".28"/>
+        <path d="M128 26 L107 55 L121 55 L114 80 L137 50 L123 50 Z" fill="#17a9cd"/>
+        <path d="M128 26 L107 55 L121 55 L114 80 L137 50 L123 50 Z"
+              fill="none" stroke="#9ff0ff" stroke-width="1.1" opacity=".75"/>
+
+        <!-- 驾驶室 -->
+        <path d="M196 96 L196 26 Q196 22 200 22 L240 22 Q245 22 247 26 L266 62 L266 96 Z" fill="url(#tCab)"/>
+        <!-- 侧窗 -->
+        <path d="M206 30 L236 30 Q240 30 240 34 L240 58 Q240 62 236 62 L206 62 Q202 62 202 58 L202 34 Q202 30 206 30 Z"
+              fill="url(#tGlass)"/>
+        <!-- 风挡斜面 -->
+        <path d="M249 28 L264 62" stroke="url(#tGlass)" stroke-width="7.5" stroke-linecap="round"/>
+        <!-- 车门缝与把手 -->
+        <path d="M244 68 L244 94" stroke="#123055" stroke-width="1.4" opacity=".85"/>
+        <rect x="234" y="72" width="9" height="3.2" rx="1.6" fill="#b9cde6"/>
+        <!-- 驾驶室青色饰条 -->
+        <rect x="196" y="88" width="70" height="7" fill="#17a9cd"/>
+        <!-- 后视镜 -->
+        <path d="M264 48 L276 43" stroke="#26405f" stroke-width="2.8" stroke-linecap="round"/>
+        <rect x="274" y="37" width="6.5" height="14" rx="2" fill="#1a2c46"/>
+        <rect x="274" y="37" width="2.2" height="14" rx="1" fill="#4fd1ff" opacity=".85"/>
+        <!-- 前照灯 + 保险杠 -->
+        <circle cx="266" cy="76" r="17" fill="url(#tLamp)"/>
+        <rect x="259" y="68" width="9" height="14" rx="2.5" fill="#dff6ff"/>
+        <rect x="258" y="86" width="12" height="10" rx="2.5" fill="#1a2c46"/>
+
+      </g>
+    </svg>
+  </div>
+</div>
+
+<!-- ===================== 内容 ===================== -->
+<main>
+  <article class="card">
+
+    <header class="head">
+      <div class="avatar" aria-hidden="true">殷</div>
+      <div>
+        <h1>殷崇信</h1>
+        <p class="role">轻卡总体设计工程师<span class="dot"></span>主攻新能源轻卡</p>
+      </div>
+    </header>
+
+    <hr class="rule">
+
+    <p class="lede">
+      12 年只做一件事：把一张草图，变成能安全跑在路上的<em>轻卡</em>。
+    </p>
+
+    <hr class="rule">
+
+    <section class="prose" aria-labelledby="about">
+      <h2 id="about" class="sec-title">关于我</h2>
+      <p>
+        我毕业于南昌大学车辆工程专业，获学士学位。工作以来一直深耕轻卡总体设计，
+        从零部件与系统布置做起，逐步承担整车总布置、性能匹配与平台开发，
+        完整经历过多个轻卡车型从概念定义、方案冻结到量产交付的全过程。
+      </p>
+      <p>
+        最近几年，我把主要精力放在新能源轻卡上。相比燃油车，电动轻卡的总体设计要重新回答一串问题：
+        电池怎么布置才能同时兼顾轴荷分配与货箱容积，三电如何集成才能让底盘更紧凑、
+        检修更便利，续航与补能效率又怎么在城市配送的真实工况里做到可用。
+        这些问题没有现成答案，只能一版一版地算、一轮一轮地试。
+      </p>
+      <p>
+        我的习惯是把法规、成本、工艺和用户的实际运营场景一起放进早期方案里权衡——
+        轻卡是生产工具，用户真正关心的是每公里成本和每天能多跑几趟，
+        而不是参数表上漂亮的数字。如果你也在做这件事，欢迎随时交流。
+      </p>
+    </section>
+
+    <hr class="rule">
+
+    <section aria-labelledby="facts">
+      <h2 id="facts" class="sec-title">基本情况</h2>
+      <ul class="facts">
+        <li><span class="k">毕业院校</span><span class="v">南昌大学</span></li>
+        <li><span class="k">专业 / 学位</span><span class="v">车辆工程 · 学士</span></li>
+        <li><span class="k">从业年限</span><span class="v">12 年</span></li>
+        <li><span class="k">主攻方向</span><span class="v">新能源轻卡总体设计</span></li>
+      </ul>
+    </section>
+
+    <hr class="rule">
+
+    <section aria-labelledby="skills">
+      <h2 id="skills" class="sec-title">专业方向</h2>
+      <ul class="tags">
+        <li>轻卡整车总体设计</li>
+        <li>新能源三电集成</li>
+        <li>整车总布置</li>
+        <li>轴荷与承载匹配</li>
+        <li>CATIA</li>
+        <li>续航与能耗优化</li>
+        <li>法规与认证</li>
+        <li>DFM 可制造性</li>
+      </ul>
+    </section>
+
+    <hr class="rule">
+
+    <section aria-labelledby="contact">
+      <h2 id="contact" class="sec-title">联系我</h2>
+      <nav aria-label="社交媒体">
+        <ul class="social">
+          <li>
+            <a href="#" rel="me">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.1c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.25 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.2.67.8.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+              GitHub
+            </a>
+          </li>
+          <li>
+            <a href="#" rel="me">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13Zm1.78 13.02H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0Z"/></svg>
+              LinkedIn
+            </a>
+          </li>
+          <li>
+            <a href="mailto:">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 5.25A2.25 2.25 0 0 1 3.75 3h16.5a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 20.25 21H3.75A2.25 2.25 0 0 1 1.5 18.75V5.25Zm2.4-.75 8.1 7.02L20.1 4.5H3.9Zm16.6 1.36-7.94 6.88a1.5 1.5 0 0 1-1.98 0L2.99 5.86A.75.75 0 0 0 3 6v12.75c0 .41.34.75.75.75h16.5a.75.75 0 0 0 .75-.75V6a.75.75 0 0 0 .01-.14Z"/></svg>
+              邮箱
+            </a>
+          </li>
+          <li>
+            <a href="#" rel="me">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.8 3.8 0 0 1-1.38-.9 3.8 3.8 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 5.18a4.66 4.66 0 1 0 0 9.32 4.66 4.66 0 0 0 0-9.32Zm0 7.69a3.03 3.03 0 1 1 0-6.06 3.03 3.03 0 0 1 0 6.06Zm5.93-7.87a1.09 1.09 0 1 1-2.18 0 1.09 1.09 0 0 1 2.18 0Z"/></svg>
+              Instagram
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </section>
+
+  </article>
+
+  <footer>© 2026 殷崇信</footer>
+</main>
+
+</body>
+</html>
