@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>殷崇信 · 轻卡总体设计工程师</title>
-<meta name="description" content="殷崇信，轻卡总体设计工程师，主攻新能源轻卡。南昌大学车辆工程专业学士，12 年整车设计经验。">
+<title>Mr.Demonangle · 轻卡总布置工程师</title>
+<meta name="description" content="Mr.Demonangle，轻卡总布置工程师，主攻新能源轻卡。">
 <style>
   /* ============================================================
      设计令牌
@@ -411,6 +411,133 @@
     fill: currentColor;
   }
 
+  /* ---- App 下载 ---- */
+  .app-head {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+  }
+
+  .app-icon {
+    width: 46px; height: 46px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: linear-gradient(135deg, rgba(79, 209, 255, .20), rgba(79, 209, 255, .04));
+    border: 1px solid var(--chip-line);
+    border-radius: 13px;
+  }
+
+  .app-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .app-ver {
+    margin-left: .4rem;
+    padding: .1rem .45rem;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: #a9d6f5;
+    background: var(--chip);
+    border: 1px solid var(--chip-line);
+    border-radius: 999px;
+    vertical-align: .1em;
+  }
+
+  .app-meta {
+    margin-top: .2rem;
+    font-size: .78rem;
+    color: var(--ink-faint);
+  }
+
+  .app-desc {
+    margin: .85rem 0 1rem;
+    font-size: .94rem;
+    color: var(--ink-soft);
+  }
+
+  .unlock {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+
+  .unlock input {
+    flex: 1 1 220px;
+    min-width: 0;
+    padding: .6rem .8rem;
+    font: inherit;
+    font-size: .9rem;
+    letter-spacing: .08em;
+    color: var(--ink);
+    background: rgba(4, 12, 28, .55);
+    border: 1px solid var(--glass-line);
+    border-radius: 10px;
+    transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+  }
+
+  .unlock input::placeholder {
+    color: var(--ink-faint);
+    letter-spacing: .02em;
+  }
+
+  .unlock input:focus-visible {
+    outline: none;
+    border-color: rgba(79, 209, 255, .6);
+    box-shadow: 0 0 0 3px rgba(79, 209, 255, .12);
+  }
+
+  .unlock button {
+    padding: .6rem 1.2rem;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: rgba(79, 209, 255, .10);
+    border: 1px solid rgba(79, 209, 255, .45);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color .18s var(--ease), border-color .18s var(--ease);
+  }
+
+  .unlock button:hover:not(:disabled) {
+    background: rgba(79, 209, 255, .18);
+    border-color: rgba(79, 209, 255, .7);
+  }
+
+  .unlock button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .unlock button:disabled {
+    opacity: .55;
+    cursor: progress;
+  }
+
+  .unlock-status {
+    min-height: 1.4em;
+    margin: .75rem 0 0;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+
+  .unlock-status[data-tone="error"] { color: #ff9d9d; }
+  .unlock-status[data-tone="ok"] { color: #7ee0b8; }
+
+  .app-note {
+    margin: .9rem 0 0;
+    font-size: .76rem;
+    line-height: 1.65;
+    color: var(--ink-faint);
+  }
+
   /* ---- 页脚 ---- */
   footer {
     position: relative;
@@ -567,17 +694,17 @@
   <article class="card">
 
     <header class="head">
-      <div class="avatar" aria-hidden="true">殷</div>
+      <div class="avatar" aria-hidden="true">MD</div>
       <div>
-        <h1>殷崇信</h1>
-        <p class="role">轻卡总体设计工程师<span class="dot"></span>主攻新能源轻卡</p>
+        <h1>Mr.Demonangle</h1>
+        <p class="role">轻卡总布置工程师<span class="dot"></span>主攻新能源轻卡</p>
       </div>
     </header>
 
     <hr class="rule">
 
     <p class="lede">
-      12 年只做一件事：把一张草图，变成能安全跑在路上的<em>轻卡</em>。
+      十几年来只做一件事：把一张草图，变成能安全跑在路上的<em>轻卡</em>。
     </p>
 
     <hr class="rule">
@@ -585,12 +712,12 @@
     <section class="prose" aria-labelledby="about">
       <h2 id="about" class="sec-title">关于我</h2>
       <p>
-        我毕业于南昌大学车辆工程专业，获学士学位。工作以来一直深耕轻卡总体设计，
+        我毕业于南昌大学，工作以来一直深耕轻卡总布置，
         从零部件与系统布置做起，逐步承担整车总布置、性能匹配与平台开发，
         完整经历过多个轻卡车型从概念定义、方案冻结到量产交付的全过程。
       </p>
       <p>
-        最近几年，我把主要精力放在新能源轻卡上。相比燃油车，电动轻卡的总体设计要重新回答一串问题：
+        最近几年，我把主要精力放在新能源轻卡上。相比燃油车，电动轻卡的总布置要重新回答一串问题：
         电池怎么布置才能同时兼顾轴荷分配与货箱容积，三电如何集成才能让底盘更紧凑、
         检修更便利，续航与补能效率又怎么在城市配送的真实工况里做到可用。
         这些问题没有现成答案，只能一版一版地算、一轮一轮地试。
@@ -608,9 +735,7 @@
       <h2 id="facts" class="sec-title">基本情况</h2>
       <ul class="facts">
         <li><span class="k">毕业院校</span><span class="v">南昌大学</span></li>
-        <li><span class="k">专业 / 学位</span><span class="v">车辆工程 · 学士</span></li>
-        <li><span class="k">从业年限</span><span class="v">12 年</span></li>
-        <li><span class="k">主攻方向</span><span class="v">新能源轻卡总体设计</span></li>
+        <li><span class="k">主攻方向</span><span class="v">新能源轻卡总布置</span></li>
       </ul>
     </section>
 
@@ -619,7 +744,7 @@
     <section aria-labelledby="skills">
       <h2 id="skills" class="sec-title">专业方向</h2>
       <ul class="tags">
-        <li>轻卡整车总体设计</li>
+        <li>轻卡整车总布置</li>
         <li>新能源三电集成</li>
         <li>整车总布置</li>
         <li>轴荷与承载匹配</li>
@@ -628,6 +753,27 @@
         <li>法规与认证</li>
         <li>DFM 可制造性</li>
       </ul>
+    </section>
+
+    <hr class="rule">
+
+    <section aria-labelledby="app">
+      <h2 id="app" class="sec-title">我的 App</h2>
+      <div class="app-head">
+        <div class="app-icon" aria-hidden="true">琴</div>
+        <div>
+          <div class="app-name">琴颈音阶<span class="app-ver">v1.17 内测版</span></div>
+          <div class="app-meta">Android 8.0+ · 18.0 MB · 数据全部本地保存，不联网</div>
+        </div>
+      </div>
+      <p class="app-desc">把手机横过来当琴颈，身边没有吉他时也能练音阶指型、速度和肌肉记忆。</p>
+      <form class="unlock" id="unlock-form" autocomplete="off">
+        <input id="unlock-code" type="text" inputmode="latin" spellcheck="false"
+               placeholder="输入邀请码" aria-label="邀请码">
+        <button type="submit" id="unlock-btn">下载 APK</button>
+      </form>
+      <p class="unlock-status" id="unlock-status" role="status" aria-live="polite">需要邀请码，向我要一个。</p>
+      <p class="app-note">内测版本，请勿转发。安装时需允许「未知来源」应用；与商店正式版包名不同，可同时安装。</p>
     </section>
 
     <hr class="rule">
@@ -666,8 +812,135 @@
 
   </article>
 
-  <footer>© 2026 殷崇信</footer>
+  <footer>© 2026 Mr.Demonangle</footer>
 </main>
+
+<script>
+(() => {
+  const KEYRING_URL = 'release/v1.17/keyring.json';
+  const form = document.getElementById('unlock-form');
+  const input = document.getElementById('unlock-code');
+  const btn = document.getElementById('unlock-btn');
+  const statusEl = document.getElementById('unlock-status');
+
+  const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+  const setStatus = (text, tone) => {
+    statusEl.textContent = text;
+    if (tone) statusEl.dataset.tone = tone;
+    else delete statusEl.dataset.tone;
+  };
+
+  // 邀请码只含 0-9 与去掉 I/L/O/U 的字母；输入时的 O→0、I/L→1 容错，前缀 GSP 可省略
+  const normalize = (raw) => {
+    let s = raw.toUpperCase().replace(/[^0-9A-Z]/g, '')
+      .replace(/O/g, '0').replace(/[IL]/g, '1');
+    if (s.length === 20 && !s.startsWith('GSP')) s = 'GSP' + s;
+    return s;
+  };
+
+  let keyringPromise = null;
+  const loadKeyring = () => keyringPromise ??= fetch(KEYRING_URL, { cache: 'no-cache' })
+    .then((r) => {
+      if (!r.ok) throw new Error('下载配置失败 (' + r.status + ')');
+      return r.json();
+    });
+
+  async function deriveKek(code, kdf) {
+    const material = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: b64(kdf.salt), iterations: kdf.iter, hash: 'SHA-256' },
+      material, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  }
+
+  async function findDataKey(kr, code) {
+    const kek = await deriveKek(code, kr.kdf);
+    for (const wrap of kr.wraps) {
+      try {
+        return await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(wrap.iv) }, kek, b64(wrap.key));
+      } catch (_) { /* 这把钥匙不对，换下一个 */ }
+    }
+    return null;
+  }
+
+  async function fetchWithProgress(url, onProgress) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('文件下载失败 (' + res.status + ')');
+    const total = Number(res.headers.get('content-length')) || 0;
+    if (!res.body || !total) return new Uint8Array(await res.arrayBuffer());
+    const reader = res.body.getReader();
+    const chunks = [];
+    let loaded = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.length;
+      onProgress(loaded, total);
+    }
+    const out = new Uint8Array(loaded);
+    let off = 0;
+    for (const c of chunks) { out.set(c, off); off += c.length; }
+    return out;
+  }
+
+  const hex = (buf) =>
+    [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+
+  function save(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (btn.disabled) return;
+    const code = normalize(input.value);
+    if (code.length !== 23) {
+      setStatus('邀请码格式不对，检查一下再试。', 'error');
+      return;
+    }
+    btn.disabled = true;
+    try {
+      setStatus('正在校验邀请码…');
+      const kr = await loadKeyring();
+      const rawKey = await findDataKey(kr, code);
+      if (!rawKey) {
+        setStatus('邀请码不正确或已失效。', 'error');
+        return;
+      }
+      setStatus('邀请码通过，正在下载 0%');
+      const packed = await fetchWithProgress(kr.file, (loaded, total) => {
+        setStatus('邀请码通过，正在下载 ' + Math.round((loaded / total) * 100) + '%');
+      });
+      setStatus('正在解密…');
+      const key = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, ['decrypt']);
+      const plain = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: packed.subarray(0, 12) }, key, packed.subarray(12));
+      const digest = hex(await crypto.subtle.digest('SHA-256', plain));
+      if (kr.sha256 && digest !== kr.sha256) {
+        setStatus('文件校验失败，刷新页面再试一次。', 'error');
+        return;
+      }
+      save(new Blob([plain], { type: 'application/vnd.android.package-archive' }),
+           kr.file.split('/').pop().replace(/\.enc$/, ''));
+      setStatus('下载完成，可以安装了。', 'ok');
+    } catch (err) {
+      console.error(err);
+      setStatus('出错了：' + (err && err.message ? err.message : '未知错误'), 'error');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
