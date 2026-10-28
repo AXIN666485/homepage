@@ -757,7 +757,7 @@
 
     <hr class="rule">
 
-    <section aria-labelledby="app">
+    <section aria-labelledby="app" id="app-section">
       <h2 id="app" class="sec-title">我的 App</h2>
       <div class="app-head">
         <div class="app-icon" aria-hidden="true">琴</div>
@@ -817,6 +817,13 @@
 
 <script>
 (() => {
+  // 下载区总开关：false = 页面不显示、也不请求任何文件；改为 true 重新发布即可恢复
+  const APP_DOWNLOAD_ENABLED = false;
+  if (!APP_DOWNLOAD_ENABLED) {
+    document.getElementById('app-section')?.remove();
+    return;
+  }
+
   const KEYRING_URL = 'release/v1.17/keyring.json';
   const form = document.getElementById('unlock-form');
   const input = document.getElementById('unlock-code');
